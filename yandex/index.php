@@ -27,19 +27,21 @@ require_once "func.php";
     $showForm = true;
     $scriptRun = false;
     $isLocal = (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], '.local') !== false) ? true : false;
-    ?>
-    <? if (isset($_POST['token']) && isset($_SESSION['token']) && $_POST['token'] === $_SESSION['token']) { ?>
-        <? if ($isLocal) { ?>
-            <? $scriptRun = true; ?>
-        <? } else { ?>
-            <? if (isset($_POST['secret']) && $_POST['secret'] == '100грамм') { ?>
 
-            <? } else { ?>
-                <p>Секретное слово указано не верно!</p>
-                <? $showForm = true; ?>
-            <? } ?>
-        <? } ?>
-    <? } ?>
+    if (isset($_POST['token']) && isset($_SESSION['token']) && $_POST['token'] === $_SESSION['token']) {
+        if ($isLocal) {
+            $scriptRun = true;
+        } else {
+            if (isset($_POST['secret']) && $_POST['secret'] == '100грамм') {
+                $showForm = true;
+                echo '<p>Секретное слово указано не верно!</p>';
+            } else {
+                $scriptRun = true;
+            }
+        }
+    }
+    ?>
+
     <? if ($scriptRun) { ?>
         <? if (isset($_POST['MESSAGE']) && !empty($_POST['MESSAGE'])) { ?>
             <?
