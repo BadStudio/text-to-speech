@@ -15,7 +15,7 @@ require_once "func.php";
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="BadStudio SpeechKit from Yandex">
     <meta property="og:locale" content="ru_RU">
-    <title>Моя форма</title>
+    <title>BadStudio SpeechKit from Yandex</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
