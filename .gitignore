@@ -1,0 +1,7 @@
+*.DS_Store
+*.idea
+/google/keyfile.json
+/yandex/result/*
+/google/result/*
+*.mp3
+*.ogg
