@@ -1,9 +1,12 @@
 <?
-require_once "defines.php";
-
-function TextToSpeech($text = false)
+function TextToSpeech($text = false, $rsVoice = 'filipp_neutral', $speed = '1')
 {
     $result = "";
+
+    $rsVoice = explode("_", $rsVoice);
+    $selectVoice = $rsVoice[0];
+    $selectEmotion = $rsVoice[1];
+
     if ($text) {
         $url = "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize";
         $headers = ['Authorization: Bearer ' . TOKEN];
@@ -32,78 +35,55 @@ function TextToSpeech($text = false)
             mkdir($dirPath, 0777, true);
         }
 
-        $result .= '<div class="h1">Результаты:</div>';
+        $result .= '<div class="h1">Результат:</div>';
 
-        foreach ($arVoices as $selectVoice) {
-            foreach ($arEmotions as $selectEmotion) {
-                $speed = '1';
-                switch ($selectEmotion) {
-                    case "good":
-                        switch ($selectVoice) { //эти голоса не поддерживают good
-                            case "omazh":
-                                $selectEmotion = $arEmotions[0];
-                                break;
-                        }
-                        break;
-                    case "evil":
-                        switch ($selectVoice) { //эти голоса не поддерживают evil
-                            case "ermil":
-                            case "zahar":
-                            case "alena":
-                                $selectEmotion = $arEmotions[0];
-                        }
-                        break;
-                }
+        $post = [
+            'text' => $text,
+            'folderId' => FOLDER,
+            'lang' => 'ru-RU',
+            'voice' => $selectVoice,
+            'emotion' => $selectEmotion,
+            'speed' => $speed,
+            'format' => 'mp3',
+        ];
 
-                $post = [
-                    'text' => $text,
-                    'folderId' => FOLDER,
-                    'lang' => 'ru-RU',
-                    'voice' => $selectVoice,
-                    'emotion' => $selectEmotion,
-                    'speed' => $speed,
-                    'format' => 'mp3',
-                ];
-
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-                curl_setopt($ch, CURLOPT_HEADER, false);
-                if ($post !== false) {
-                    curl_setopt($ch, CURLOPT_POST, 1);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-                }
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-                $response = curl_exec($ch);
-                if (curl_errno($ch)) {
-                    print "Error: " . curl_error($ch);
-                }
-                if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-                    $decodedResponse = json_decode($response, true);
-                    echo "Error code: " . $decodedResponse["error_code"] . "\r\n";
-                    echo "Error message: " . $decodedResponse["error_message"] . "\r\n";
-                } else {
-                    $speed = str_replace('.', '', $speed);
-                    $filePath = $dirPath . $fileName . "_" . $selectVoice . "_" . $selectEmotion . "_" . $speed . ".mp3";
-                    $audioName = $selectVoice . "_" . $selectEmotion;
-                    $fullFilePath = "/yandex/" . $filePath;
-                    file_put_contents($filePath, $response);
-                    $result .= '<div class="my-4">';
-                    $result .= '<audio controls>';
-                    $result .= '<source src="' . $fullFilePath . '" type="audio/mpeg">';
-                    $result .= 'Ваш браузер не поддерживает аудио-элемент.';
-                    $result .= '</audio>';
-                    $result .= '<a href="' . $fullFilePath . '" class="d-block mt-3" target="_blank" download="'.$audioName.'.mp3">Скачать ' . $audioName . '</a>';
-                    $result .= '</div>';
-                    $result .= '<hr>';
-                }
-
-                curl_close($ch);
-            }
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, false);
+        if ($post !== false) {
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
         }
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            print "Error: " . curl_error($ch);
+        }
+        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
+            $decodedResponse = json_decode($response, true);
+            echo "Error code: " . $decodedResponse["error_code"] . "\r\n";
+            echo "Error message: " . $decodedResponse["error_message"] . "\r\n";
+        } else {
+            $speed = str_replace('.', '', $speed);
+            $filePath = $dirPath . $fileName . "_" . $selectVoice . "_" . $selectEmotion . "_" . $speed . ".mp3";
+            $audioName = $selectVoice . "_" . $selectEmotion;
+            $fullFilePath = "/yandex/" . $filePath;
+            file_put_contents($filePath, $response);
+            $result .= '<div class="my-4">';
+            $result .= '<audio controls>';
+            $result .= '<source src="' . $fullFilePath . '" type="audio/mpeg">';
+            $result .= 'Ваш браузер не поддерживает аудио-элемент.';
+            $result .= '</audio>';
+            $result .= '<a href="' . $fullFilePath . '" class="d-block mt-3" target="_blank" download="' . $audioName . '.mp3">Скачать ' . $audioName . '</a>';
+            $result .= '</div>';
+            $result .= '<hr>';
+        }
+
+        curl_close($ch);
     }
 
     $result .= '<a href="/yandex/" class="h2">Создать новое аудио!</a>';
