@@ -1,5 +1,6 @@
 <?
 
+die("Сервис временно не доступен!");
 require __DIR__ . '/vendor/autoload.php';
 
 use Google\Cloud\TextToSpeech\V1\AudioConfig;

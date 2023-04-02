@@ -1,88 +1,90 @@
 <?
-require_once "defines.php";
+require_once "func.php";
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Моя форма</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+</head>
+<body>
+<div class="container-fluid container-xl">
+    <?
+    session_start();
+    $showForm = true;
+    ?>
+    <? if (isset($_POST['token']) && isset($_SESSION['token']) && $_POST['token'] === $_SESSION['token']) { ?>
+        <? if (isset($_POST['secret']) && $_POST['secret'] == '100грамм') { ?>
+            <? if (isset($_POST['MESSAGE'])) { ?>
+                <?
+                $result = TextToSpeech(htmlspecialchars($_POST['MESSAGE']));
+                echo $result;
+                $showForm = false;
+                // Удаляем токен из сессии, чтобы он не мог быть использован повторно
+                unset($_SESSION['token']);
+                ?>
+            <? } else { ?>
+                <p>Текст для генерации не указан!</p>
+                <? $showForm = true; ?>
+            <? } ?>
+        <? } else { ?>
+            <p>Секретное слово указано не верно!</p>
+            <? $showForm = true; ?>
+        <? } ?>
+    <? } ?>
+    <? if ($showForm) { ?>
+        <form method="post" enctype="multipart/form-data" action="">
+            <div class="mb-3">
+                <div>
+                    <label for="MESSAGE" class="form-label">Текст слов:</label>
+                </div>
+                <textarea class="form-control" id="MESSAGE" name="MESSAGE" rows="4" cols="50"></textarea>
+            </div>
+            <div class="mb-3">
+                <div>
+                    <label for="secret" class="form-label">Секретное слово:</label>
+                </div>
+                <input type="text" class="form-control" id="secret" name="secret">
+            </div>
+            <button type="submit" class="btn btn-primary">Отправить</button>
+            <input type="hidden" name="token" value="<?= generate_token(); ?>">
+            <input type="hidden" name="LINK" value="">
+        </form>
 
-$url = "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize";
-$headers = ['Authorization: Bearer ' . TOKEN];
+        <div class="alert alert-info d-none" role="alert">
+            Ожидайте, идёт генерация аудио-файлов...&nbsp;<span id="countdown"></span>
+        </div>
+    <? } ?>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+        crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function() {
+        const countdownEl = document.getElementById("countdown");
+        const alertEl = document.querySelector(".alert");
 
-$text = "Нейросети уже заменяют программистов?";
-$text .= "Я решил не отставать и тоже переквалифицироваться. Теперь я бармен!";
-$text .= "Как говорится, если не можешь победить технологии, присоединяйся к ним...";
-$text .= "и наливай Пина Коладу!";
-$text .= "Давайте поднимем стаканы за нашу новую роботизированную эру!";
-$text .= "Хотя, честно говоря, я даже не знаю, как делать мартини...";
-$text .= "Кто-нибудь здесь умеет???";
+        $('button').click(function() {
+            $(this).hide();
+            alertEl.classList.remove('d-none');
 
-$text = "Всем привет! Это команда Бэд Студио и мы сегодня покажем вам новую работу!";
+            let secondsLeft = 30;
+            countdownEl.textContent = secondsLeft; // начальное значение отсчета
 
-$arVoices = ['ermil', 'filipp', 'madirus', 'zahar', 'omazh', 'jane', 'alena'];
-$arEmotions = ['neutral', 'good', 'evil'];
-$fileName = "demo";
-
-// Путь к директории, куда будем сохранять файлы
-$dirPath = "result/" . $fileName . "/";
-
-// Если директория не существует, то создаем ее
-if (!file_exists($dirPath)) {
-    mkdir($dirPath, 0777, true);
-}
-
-foreach ($arVoices as $selectVoice) {
-    foreach ($arEmotions as $selectEmotion) {
-        $speed = '1';
-
-        switch ($selectEmotion) {
-            case "good":
-                switch ($selectVoice) { //эти голоса не поддерживают good
-                    case "omazh":
-                        $selectEmotion = $arEmotions[0];
-                        break;
+            const intervalId = setInterval(() => {
+                secondsLeft--;
+                countdownEl.textContent = secondsLeft;
+                if (secondsLeft === 0) {
+                    countdownEl.textContent = "надо ещё немного времени :)";
+                    clearInterval(intervalId);
+                    //alertEl.style.display = "none";
                 }
-                break;
-            case "evil":
-                switch ($selectVoice) { //эти голоса не поддерживают evil
-                    case "ermil":
-                    case "zahar":
-                    case "alena":
-                        $selectEmotion = $arEmotions[0];
-                }
-                break;
-        }
-
-        $post = [
-            'text' => $text,
-            'folderId' => FOLDER,
-            'lang' => 'ru-RU',
-            'voice' => $selectVoice,
-            'emotion' => $selectEmotion,
-            'speed' => $speed,
-            'format' => 'mp3',
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_AUTOREFERER, TRUE);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, false);
-        if ($post !== false) {
-            curl_setopt($ch, CURLOPT_POST, 1);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        $response = curl_exec($ch);
-        if (curl_errno($ch)) {
-            print "Error: " . curl_error($ch);
-        }
-        if (curl_getinfo($ch, CURLINFO_HTTP_CODE) != 200) {
-            $decodedResponse = json_decode($response, true);
-            echo "Error code: " . $decodedResponse["error_code"] . "\r\n";
-            echo "Error message: " . $decodedResponse["error_message"] . "\r\n";
-        } else {
-            $speed = str_replace('.', '', $speed);
-            $filePath = $dirPath . $fileName . "_" . $selectVoice . "_" . $selectEmotion . "_" . $speed . ".mp3";
-            file_put_contents($filePath, $response);
-        }
-        curl_close($ch);
-    }
-}
+            }, 1000);
+        });
+    });
+</script>
+</body>
+</html>
