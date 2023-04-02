@@ -1,4 +1,5 @@
 <?
+require_once "api.php";
 require_once "defines.php";
 require_once "func.php";
 ?>

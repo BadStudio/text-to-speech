@@ -1,10 +1,4 @@
 <?
-# команда для получения IAM-токена: yc iam create-token
-// Укажите IAM-токен.
-define("TOKEN", "demo");
-// Укажите идентификатор каталога.
-define("FOLDER", "demo");
-
 $arVoices = [];
 //мужские голоса
 $arVoices[] = ['NAME' => 'М: Филипп', 'CODE' => 'filipp_neutral'];
