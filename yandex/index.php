@@ -121,7 +121,6 @@ require_once "func.php";
 
         <h2 class="mt-4">Демонстрация голоса</h2>
         <?
-
         $codeToName = array_combine(
             array_column($arVoices, 'CODE'),
             array_column($arVoices, 'NAME')
@@ -129,25 +128,29 @@ require_once "func.php";
 
         $directory = $_SERVER['DOCUMENT_ROOT'] . "/yandex/demo/";
         $mp3Files = glob($directory . "*.mp3");
-        foreach ($mp3Files as $file) {
-            $file = str_replace($_SERVER['DOCUMENT_ROOT'], '', $file);
-            $pattern = "/\/yandex\/demo\/(.+)\.mp3/";
-            preg_match($pattern, $file, $matches);
-
-            // действия с каждым mp3 файлом
-            $result = '<div class="my-4">';
-            $result .= '<div class="h3">' . $codeToName[$matches[1]] . '</div>';
-            $result .= '<audio controls>';
-            $result .= '<source src="' . $file . '" type="audio/mpeg">';
-            $result .= 'Ваш браузер не поддерживает аудио-элемент.';
-            $result .= '</audio>';
-            $result .= '</div>';
-            $result .= '<hr>';
-
-            echo $result;
-        }
-
         ?>
+        <div class="row">
+            <? foreach ($mp3Files as $file) { ?>
+                <?
+                $file = str_replace($_SERVER['DOCUMENT_ROOT'], '', $file);
+                $pattern = "/\/yandex\/demo\/(.+)\.mp3/";
+                preg_match($pattern, $file, $matches);
+                ?>
+                <div class="col-12 col-md-6 col-lg-4 my-4">
+                    <div class="d-flex flex-column h-100">
+                        <div class="h5 font-weight-bold"><?= $codeToName[$matches[1]]; ?></div>
+                        <div class="mt-auto">
+                            <div class="mt-3">
+                                <audio controls>
+                                    <source src="<?= $file; ?>" type="audio/mpeg">
+                                    Ваш браузер не поддерживает аудио-элемент.
+                                </audio>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <? } ?>
+        </div>
     <? } ?>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
