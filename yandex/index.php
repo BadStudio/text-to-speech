@@ -33,10 +33,11 @@ require_once "func.php";
             $scriptRun = true;
         } else {
             if (isset($_POST['secret']) && $_POST['secret'] === '100грамм') {
+                $scriptRun = true;
+            } else {
+                $scriptRun = false;
                 $showForm = true;
                 echo '<p>Секретное слово указано не верно!</p>';
-            } else {
-                $scriptRun = true;
             }
         }
     }
