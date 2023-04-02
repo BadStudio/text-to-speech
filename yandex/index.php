@@ -52,10 +52,11 @@ require_once "func.php";
         <? } ?>
     <? } ?>
     <? if ($showForm) { ?>
+        <h1>Создать голос на основе текста</h1>
         <form method="post" enctype="multipart/form-data" action="">
             <div class="mb-3">
                 <div>
-                    <label for="MESSAGE" class="form-label">Текст слов:</label>
+                    <label for="MESSAGE" class="form-label">Текст:</label>
                 </div>
                 <textarea class="form-control" id="MESSAGE" name="MESSAGE" rows="4" cols="50"></textarea>
             </div>
@@ -87,6 +88,38 @@ require_once "func.php";
         <div class="alert alert-info d-none" role="alert">
             Ожидайте, идёт генерация аудио-файлов...&nbsp;<span id="countdown"></span>
         </div>
+
+        <h2 class="mt-4">Демонстрация голоса</h2>
+        <?
+
+        $codeToName = array_combine(
+            array_column($arVoices, 'CODE'),
+            array_column($arVoices, 'NAME')
+        );
+
+        $directory = $_SERVER['DOCUMENT_ROOT'] . "/yandex/demo/";
+        $mp3Files = glob($directory . "*.mp3");
+
+
+        foreach ($mp3Files as $file) {
+            $file = str_replace($_SERVER['DOCUMENT_ROOT'], '', $file);
+            $pattern = "/\/yandex\/demo\/(.+)\.mp3/";
+            preg_match($pattern, $file, $matches);
+
+            // действия с каждым mp3 файлом
+            $result = '<div class="my-4">';
+            $result .= '<div class="h3">' . $codeToName[$matches[1]] . '</div>';
+            $result .= '<audio controls>';
+            $result .= '<source src="' . $file . '" type="audio/mpeg">';
+            $result .= 'Ваш браузер не поддерживает аудио-элемент.';
+            $result .= '</audio>';
+            $result .= '</div>';
+            $result .= '<hr>';
+
+            echo $result;
+        }
+
+        ?>
     <? } ?>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
@@ -133,14 +166,14 @@ require_once "func.php";
                 slide: function (event, ui) {
                     // Обновление значения в скрытом поле формы
                     input.val(ui.value);
-                    select.html(ui.value+"x");
+                    select.html(ui.value + "x");
                 }
             });
 
             // Начальное значение в скрытом поле формы
             let selectDefault = uiSlider.slider("value");
             input.val(selectDefault);
-            select.html(selectDefault+"x");
+            select.html(selectDefault + "x");
 
         })
     });
