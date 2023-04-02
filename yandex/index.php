@@ -26,6 +26,7 @@ require_once "func.php";
     session_start();
     $showForm = true;
     $scriptRun = false;
+    $arError = "";
     $isLocal = (isset($_SERVER['HTTP_HOST']) && strpos($_SERVER['HTTP_HOST'], '.local') !== false) ? true : false;
 
     if (isset($_POST['token']) && isset($_SESSION['token']) && $_POST['token'] === $_SESSION['token']) {
@@ -37,8 +38,14 @@ require_once "func.php";
             } else {
                 $scriptRun = false;
                 $showForm = true;
-                echo '<p>Секретное слово указано не верно!</p>';
+                $arError .= '<p>Секретное слово указано не верно!</p>';
             }
+        }
+    } else {
+        if (isset($_POST['token']) && $_POST['token']) {
+            $scriptRun = false;
+            $showForm = true;
+            $arError .= '<p>Повторная отправка формы через обновление страницы запрещена. Используйте интерфейс сайта!</p>';
         }
     }
     ?>
@@ -59,9 +66,14 @@ require_once "func.php";
             unset($_SESSION['token']);
             ?>
         <? } else { ?>
-            <p>Текст для генерации не указан!</p>
-            <? $showForm = true; ?>
+            <?
+            $showForm = true;
+            $arError .= '<p>Текст для генерации не указан!</p>';
+            ?>
         <? } ?>
+    <? } ?>
+    <? if ($arError) { ?>
+        <div class="alert alert-danger mt-5" role="alert"><?= $arError; ?></div>
     <? } ?>
     <? if ($showForm) { ?>
         <h1>Создать голос на основе текста</h1>
@@ -70,7 +82,8 @@ require_once "func.php";
                 <div>
                     <label for="MESSAGE" class="form-label">Текст:</label>
                 </div>
-                <textarea class="form-control" id="MESSAGE" name="MESSAGE" rows="4" cols="50"></textarea>
+                <textarea class="form-control" id="MESSAGE" name="MESSAGE" rows="4"
+                          cols="50"><?= (isset($_POST['MESSAGE'])) ? $_POST['MESSAGE'] : ''; ?></textarea>
             </div>
             <div class="mb-3">
                 <div>
@@ -78,20 +91,25 @@ require_once "func.php";
                 </div>
                 <select name="VOICE" class="form-select" id="VOICE">
                     <? foreach ($arVoices as $arVoice) { ?>
-                        <option value="<?= $arVoice['CODE']; ?>"><?= $arVoice['NAME']; ?></option>
+                        <?
+                        $select = (isset($_POST['VOICE']) && $_POST['VOICE'] == $arVoice['CODE']) ? ' selected' : '';
+                        ?>
+                        <option value="<?= $arVoice['CODE']; ?>"<?= $select; ?>><?= $arVoice['NAME']; ?></option>
                     <? } ?>
                 </select>
             </div>
             <div class="form-group">
                 <label for="SPEED">Скорость: <span class="js-speed-select"></span></label>
                 <div class="js-speed-uiSlider"></div>
-                <input type="hidden" name="SPEED" class="js-speed-input" id="SPEED">
+                <? $speedDefault = (isset($_POST['SPEED'])) ? $_POST['SPEED'] : '1.0'; ?>
+                <input type="hidden" name="SPEED" value="<?= $speedDefault; ?>" class="js-speed-input" id="SPEED">
             </div>
             <div class="mb-3">
                 <div>
                     <label for="secret" class="form-label">Секретное слово:</label>
                 </div>
-                <input type="text" class="form-control" id="secret" name="secret">
+                <input type="text" class="form-control" id="secret"
+                       value="<?= (isset($_POST['secret'])) ? $_POST['secret'] : ''; ?>" name="secret">
             </div>
             <button type="submit" class="btn btn-primary">Отправить</button>
             <input type="hidden" name="token" value="<?= generate_token(); ?>">
@@ -111,8 +129,6 @@ require_once "func.php";
 
         $directory = $_SERVER['DOCUMENT_ROOT'] . "/yandex/demo/";
         $mp3Files = glob($directory . "*.mp3");
-
-
         foreach ($mp3Files as $file) {
             $file = str_replace($_SERVER['DOCUMENT_ROOT'], '', $file);
             $pattern = "/\/yandex\/demo\/(.+)\.mp3/";
@@ -172,7 +188,7 @@ require_once "func.php";
                 select = $(".js-speed-select");
             uiSlider.slider({
                 range: "min",
-                value: 1.0,
+                value: '<?=$speedDefault;?>',
                 step: 0.1,
                 min: 0.1,
                 max: 3.01,
