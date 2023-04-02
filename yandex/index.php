@@ -32,7 +32,7 @@ require_once "func.php";
         if ($isLocal) {
             $scriptRun = true;
         } else {
-            if (isset($_POST['secret']) && $_POST['secret'] == '100грамм') {
+            if (isset($_POST['secret']) && $_POST['secret'] === '100грамм') {
                 $showForm = true;
                 echo '<p>Секретное слово указано не верно!</p>';
             } else {
