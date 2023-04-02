@@ -137,7 +137,7 @@ require_once "func.php";
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
         integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0=" crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
 <script>
     $(document).ready(function () {
         $(function () {
